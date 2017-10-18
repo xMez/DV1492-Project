@@ -3,11 +3,33 @@
 
 #include "memblockdevice.h"
 
-class FileSystem
-{
+class FileSystem {
 private:
-    MemBlockDevice mMemblockDevice;
     // Here you can add your own data structures
+    class File {
+    public:
+
+    };
+
+    class Folder {
+    public:
+        Folder* parent;
+        std::string name;
+
+        Folder(std::string name, Folder* parent) {
+            this->name = name;
+            this->parent = parent;
+        }
+
+        ~Folder() {}
+
+
+    };
+
+    MemBlockDevice mMemblockDevice;
+    Folder root;
+    Folder* currDir;
+
 public:
     FileSystem();
     ~FileSystem();
@@ -20,7 +42,7 @@ public:
     // createFile(...)
 
     /* Creates a folder in the filesystem */
-    // createFolderi(...);
+    void createFolder(std::string name);
 
     /* Removes a file in the filesystem */
     // removeFile(...);
