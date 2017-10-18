@@ -5,28 +5,31 @@
 
 class FileSystem {
 private:
+    MemBlockDevice mMemblockDevice;
     // Here you can add your own data structures
     class File {
     public:
+        File() {}
+        ~File() {}
 
     };
 
     class Folder {
     public:
-        Folder* parent;
         std::string name;
+        Folder* parent;
+        std::vector<Folder> folders;
+        std::vector<File> files;
+    
+        Folder() {}
 
-        Folder(std::string name, Folder* parent) {
+        Folder(std::string name, Folder* parent = nullptr) {
             this->name = name;
             this->parent = parent;
         }
-
         ~Folder() {}
-
-
     };
 
-    MemBlockDevice mMemblockDevice;
     Folder root;
     Folder* currDir;
 
@@ -48,7 +51,7 @@ public:
     // removeFile(...);
 
     /* Removes a folder in the filesystem */
-    // removeFolder(...);
+    void removeFolder(std::string name);
 
     /* Function will move the current location to a specified location in the filesystem */
     // goToFolder(...);
