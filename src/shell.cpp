@@ -17,6 +17,8 @@ bool quit();
 std::string help();
 
 /* More functions ... */
+std::string trim(std::string input);
+void createFolder(std::string userCommand, FileSystem& fs);
 
 int main(void) {
 
@@ -25,6 +27,8 @@ int main(void) {
 	std::string currentDir = "/";    // current directory, used for output
 
     bool bRun = true;
+
+    FileSystem fs; // Make a filesystem
 
     do {
         std::cout << user << ":" << currentDir << "$ ";
@@ -61,6 +65,7 @@ int main(void) {
             case 10: // mv
                 break;
             case 11: // mkdir
+                createFolder(userCommand, fs);
                 break;
             case 12: // cd
                 break;
@@ -128,3 +133,23 @@ std::string help() {
 }
 
 /* Insert code for your shell functions and call them from the switch-case */
+std::string trim(std::string input) {
+    std::string whitespace = " \t";
+    if (input.find_first_not_of(whitespace) == std::string::npos) // Check for empty string
+        return "";
+    return input.substr(input.find_first_not_of(whitespace), input.find_last_not_of(whitespace) - input.find_first_not_of(whitespace) + 1);
+}
+
+void createFolder(std::string userCommand, FileSystem& fs) {
+    userCommand.erase(0,6);
+    userCommand = trim(userCommand);
+    if (userCommand == "")
+        std::cout << "Name cannot be empty" << std::endl;
+    else if (userCommand.find("/") != std::string::npos)
+        std::cout << "Name cannot contain '/'" << std::endl;
+    else if (fs.createFolder(userCommand))
+        std::cout << userCommand << " was created" << std::endl;
+    else 
+        std::cout << "Creation failed" << std::endl;
+    return;
+}
