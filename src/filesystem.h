@@ -2,6 +2,7 @@
 #define FILESYSTEM_H
 
 #include "memblockdevice.h"
+#include <algorithm>
 
 class FileSystem {
 private:
@@ -18,8 +19,8 @@ private:
     public:
         std::string name;
         Folder* parent;
-        std::vector<Folder> folders;
-        std::vector<File> files;
+        std::vector<Folder*> folders;
+        std::vector<File*> files;
     
         Folder() {}
 
@@ -29,6 +30,8 @@ private:
         }
         ~Folder() {}
     };
+
+    friend bool operator==(const Folder& lhs, const Folder& rhs) { return lhs.name == rhs.name; }
 
     Folder root;
     Folder* currDir;
@@ -45,13 +48,13 @@ public:
     // createFile(...)
 
     /* Creates a folder in the filesystem */
-    void createFolder(std::string name);
+    bool createFolder(std::string name);
 
     /* Removes a file in the filesystem */
     // removeFile(...);
 
     /* Removes a folder in the filesystem */
-    void removeFolder(std::string name);
+    bool removeFolder(std::string name);
 
     /* Function will move the current location to a specified location in the filesystem */
     // goToFolder(...);

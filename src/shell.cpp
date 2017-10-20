@@ -147,9 +147,8 @@ void createFolder(std::string userCommand, FileSystem& fs) {
         std::cout << "Name cannot be empty" << std::endl;
     else if (userCommand.find("/") != std::string::npos)
         std::cout << "Name cannot contain '/'" << std::endl;
-    else if (fs.createFolder(userCommand))
+    if (fs.createFolder(userCommand))
         std::cout << userCommand << " was created" << std::endl;
-    else 
-        std::cout << "Creation failed" << std::endl;
-    return;
+    else
+        std::cout << "mkdir: cannot create directory '" << userCommand << "': File exists" << std::endl;
 }

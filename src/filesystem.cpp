@@ -12,10 +12,17 @@ FileSystem::~FileSystem() {
 
 /* Please insert your code */
 
-void FileSystem::createFolder(std::string name) {
-    this->currDir->folders.push_back(Folder(name, this->currDir));
+bool FileSystem::createFolder(std::string name) {
+    Folder* tempFolder = new Folder(name, this->currDir);
+    auto it = std::find_if(this->currDir->folders.begin(), this->currDir->folders.end(),
+        [tempFolder](const Folder* f) -> bool{ return *f == *tempFolder; });
+    if (it != this->currDir->folders.end()) // Folder found
+        return false;
+    else   
+        this->currDir->folders.push_back(tempFolder);
+    return true;
 }
 
-void FileSystem::removeFolder(std::string name) {
+bool FileSystem::removeFolder(std::string name) {
     
 }
