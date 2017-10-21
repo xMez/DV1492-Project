@@ -3,6 +3,7 @@
 
 #include "memblockdevice.h"
 #include <algorithm>
+#include <typeinfo>
 
 class FileSystem {
 private:
@@ -28,7 +29,12 @@ private:
             this->name = name;
             this->parent = parent;
         }
-        ~Folder() {}
+        ~Folder() {
+            for (Folder* f : folders)
+                delete f;
+            for (File* f : files)
+                delete f;
+        }
     };
 
     friend bool operator==(const Folder& lhs, const Folder& rhs) { return lhs.name == rhs.name; }
@@ -57,7 +63,7 @@ public:
     bool removeFolder(std::string name);
 
     /* Function will move the current location to a specified location in the filesystem */
-    // goToFolder(...);
+    std::string goToFolder(std::string name, std::string output);
 
     /* This function will get all the files and folders in the specified folder */
     // listDir(...);

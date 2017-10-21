@@ -19,6 +19,8 @@ std::string help();
 /* More functions ... */
 std::string trim(std::string input);
 void createFolder(std::string userCommand, FileSystem& fs);
+void removeFolder(std::string userCommand, FileSystem& fs);
+std::string goToFolder(std::string name, std::string output, FileSystem& fs);
 
 int main(void) {
 
@@ -57,6 +59,7 @@ int main(void) {
             case 6: // restoreImage
                 break;
             case 7: // rm
+                removeFolder(userCommand, fs);
                 break;
             case 8: // cp
                 break;
@@ -68,6 +71,7 @@ int main(void) {
                 createFolder(userCommand, fs);
                 break;
             case 12: // cd
+                currentDir = goToFolder(userCommand, currentDir, fs);
                 break;
             case 13: // pwd
                 break;
@@ -141,14 +145,29 @@ std::string trim(std::string input) {
 }
 
 void createFolder(std::string userCommand, FileSystem& fs) {
-    userCommand.erase(0,6);
+    userCommand.erase(0, 6);
     userCommand = trim(userCommand);
     if (userCommand == "")
         std::cout << "Name cannot be empty" << std::endl;
     else if (userCommand.find("/") != std::string::npos)
         std::cout << "Name cannot contain '/'" << std::endl;
-    if (fs.createFolder(userCommand))
+    else if (fs.createFolder(userCommand))
         std::cout << userCommand << " was created" << std::endl;
     else
         std::cout << "mkdir: cannot create directory '" << userCommand << "': File exists" << std::endl;
+}
+
+void removeFolder(std::string userCommand, FileSystem& fs) {
+    userCommand.erase(0, 3);
+    userCommand = trim(userCommand);
+    if (fs.removeFolder(userCommand))
+        std::cout << userCommand << " was deleted" << std::endl;
+    else
+        std::cout << "rm: cannot create delete '" << userCommand << "': File does not exists" << std::endl;
+}
+
+std::string goToFolder(std::string userCommand, std::string output, FileSystem& fs) {
+    userCommand.erase(0, 3);
+    userCommand = trim(userCommand);
+    return fs.goToFolder(userCommand, output);
 }
