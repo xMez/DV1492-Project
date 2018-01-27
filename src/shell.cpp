@@ -18,8 +18,14 @@ std::string help();
 
 /* More functions ... */
 std::string trim(std::string input);
+std::string listDirectory(std::string userCommand, std::string current, FileSystem& fs);
+void createFile(std::string userCommand, std::string current, FileSystem& fs);
+std::string printFileContent(std::string userCommand, std::string current, FileSystem& fs);
+void createImage(std::string userCommand, FileSystem& fs);
+void restoreImage(std::string userCommand, std::string& currentDir, FileSystem* fs);
 void createFolder(std::string userCommand, FileSystem& fs);
-void removeFolder(std::string userCommand, FileSystem& fs);
+void removeFile(std::string userCommand, FileSystem& fs);
+void copyFile(std::string userCommand, std::string current, FileSystem& fs);
 std::string goToFolder(std::string name, std::string output, FileSystem& fs);
 
 int main(void) {
@@ -30,7 +36,7 @@ int main(void) {
 
     bool bRun = true;
 
-    FileSystem fs; // Make a filesystem
+    FileSystem* fs = new FileSystem(); // Make a filesystem
 
     do {
         std::cout << user << ":" << currentDir << "$ ";
@@ -45,35 +51,45 @@ int main(void) {
 			case 0: //quit
 				bRun = quit();                
                 break;
-            case 1: // format
-                break;
+			case 1: { // format
+				delete fs;
+				fs = new FileSystem();
+				currentDir = "/";
+				break;
+			}
             case 2: // ls
-                std::cout << "Listing directory" << std::endl;
+                std::cout << "Listing directory" << std::endl << listDirectory(userCommand, currentDir, *fs);
                 break;
             case 3: // create
+				createFile(userCommand, currentDir, *fs);
                 break;
             case 4: // cat
+				std::cout << printFileContent(userCommand, currentDir, *fs) << std::endl;
                 break;
             case 5: // createImage
+				createImage(userCommand, *fs);
                 break;
             case 6: // restoreImage
+				restoreImage(userCommand, currentDir, fs);
                 break;
             case 7: // rm
-                removeFolder(userCommand, fs);
+                removeFile(userCommand, *fs);
                 break;
             case 8: // cp
+				copyFile(userCommand, currentDir, *fs);
                 break;
             case 9: // append
                 break;
             case 10: // mv
                 break;
             case 11: // mkdir
-                createFolder(userCommand, fs);
+                createFolder(userCommand, *fs);
                 break;
             case 12: // cd
-                currentDir = goToFolder(userCommand, currentDir, fs);
+                currentDir = goToFolder(userCommand, currentDir, *fs);
                 break;
             case 13: // pwd
+				std::cout << currentDir << std::endl;
                 break;
             case 14: // help
                 std::cout << help() << std::endl;
@@ -83,7 +99,7 @@ int main(void) {
             }
         }
     } while (bRun == true);
-
+	delete fs;
     return 0;
 }
 
@@ -144,26 +160,94 @@ std::string trim(std::string input) {
     return input.substr(input.find_first_not_of(whitespace), input.find_last_not_of(whitespace) - input.find_first_not_of(whitespace) + 1);
 }
 
+std::string listDirectory(std::string userCommand, std::string current, FileSystem& fs) {
+	userCommand.erase(0, 3);
+	userCommand = trim(userCommand);
+	return fs.listDir(userCommand, current);
+}
+
+void createFile(std::string userCommand, std::string current, FileSystem& fs) {
+	userCommand.erase(0, 7);
+	userCommand = trim(userCommand);
+	if (userCommand == "")
+		std::cout << "Name cannot be empty" << std::endl;
+	else if (userCommand.find_first_of(" \t") != std::string::npos)
+		std::cout << "Name cannot contain whitespace" << std::endl;
+	else {
+		std::cout << "Enter file content:" << std::endl;
+		std::string content;
+		std::getline(std::cin, content);
+		int rtn = fs.createFile(userCommand, content, current);
+		if (rtn == -1)
+			std::cout << "cannot create file '" << userCommand << "': File exists" << std::endl;
+		else if (rtn == -2)
+			std::cout << "cannot create file '" << userCommand << "': Out of memory" << std::endl;
+		else
+			std::cout << userCommand << " was created" << std::endl;
+	}
+}
+
+std::string printFileContent(std::string userCommand, std::string current, FileSystem& fs) {
+	std::string output;
+	userCommand.erase(0, 4);
+	userCommand = trim(userCommand);
+	output = fs.getFileContent(userCommand, current);
+	if (output == std::string(1, '\n'))
+		output = userCommand + ": No such file or directory";
+	return output;
+}
+
+void createImage(std::string userCommand, FileSystem& fs) {
+	userCommand.erase(0, 12);
+	userCommand = trim(userCommand);
+	fs.createImage(userCommand);
+}
+
+void restoreImage(std::string userCommand, std::string& currentDir, FileSystem* fs) {
+	userCommand.erase(0, 13);
+	userCommand = trim(userCommand);
+	currentDir = "/";
+	delete fs;
+	fs = new FileSystem();
+	fs->goToFolder("..", currentDir);
+	fs->loadImage(userCommand);
+}
+
 void createFolder(std::string userCommand, FileSystem& fs) {
     userCommand.erase(0, 6);
     userCommand = trim(userCommand);
     if (userCommand == "")
         std::cout << "Name cannot be empty" << std::endl;
-    else if (userCommand.find("/") != std::string::npos)
-        std::cout << "Name cannot contain '/'" << std::endl;
+    else if (userCommand.find_first_of("/ \t") != std::string::npos)
+        std::cout << "Name cannot contain '/' or whitespace" << std::endl;
     else if (fs.createFolder(userCommand))
         std::cout << userCommand << " was created" << std::endl;
     else
-        std::cout << "mkdir: cannot create directory '" << userCommand << "': File exists" << std::endl;
+        std::cout << "cannot create directory '" << userCommand << "': File exists" << std::endl;
 }
 
-void removeFolder(std::string userCommand, FileSystem& fs) {
+void removeFile(std::string userCommand, FileSystem& fs) {
     userCommand.erase(0, 3);
     userCommand = trim(userCommand);
-    if (fs.removeFolder(userCommand))
+    if (fs.removeFile(userCommand))
         std::cout << userCommand << " was deleted" << std::endl;
     else
-        std::cout << "rm: cannot create delete '" << userCommand << "': File does not exists" << std::endl;
+        std::cout << "cannot delete '" << userCommand << "': File does not exists" << std::endl;
+}
+
+void copyFile(std::string userCommand, std::string current, FileSystem& fs) {
+	userCommand.erase(0, 3);
+	userCommand = trim(userCommand);
+	size_t pos = userCommand.find(" ");
+	std::string file1, file2, content;
+	file1 = userCommand.substr(0, pos);
+	file2 = userCommand.substr(pos + 1);
+	content = fs.getFileContent(file1, current);
+	if (content != std::string(1, '\n')) {
+		fs.createFile(file2, content, current);
+	}
+	else
+		std::cout << content << std::endl;
 }
 
 std::string goToFolder(std::string userCommand, std::string output, FileSystem& fs) {

@@ -7,13 +7,13 @@ BlockDevice::BlockDevice(int nrOfBlocks) {
         this->nrOfBlocks = 250;
 
     this->memBlocks = new Block[this->nrOfBlocks];
-    this->freePointer = 0;
-
+	for (int i = 0; i < this->nrOfBlocks; i++)
+		this->freeBlocks.push(i);
 }
 
 BlockDevice::BlockDevice(const BlockDevice &other) {
     this->nrOfBlocks = other.nrOfBlocks;
-    this->freePointer = other.freePointer;
+    this->freeBlocks = other.freeBlocks;
     this->memBlocks = new Block[this->nrOfBlocks];
 
     for (int i = 0; i < this->nrOfBlocks; ++i)

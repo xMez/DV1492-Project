@@ -17,6 +17,12 @@ public:
     /* Returns amount of free blocks */
     int spaceLeft() const;
 
+	/* Get a free block from the queue */
+	size_t getFreeBlock();
+
+	/* Release a block and add it back to the queue */
+	void releaseBlock(int blockNr);
+
     /* Writes a block */
     int writeBlock(int blockNr, const std::vector<char> &vec);
     int writeBlock(int blockNr, const std::string &strBlock);

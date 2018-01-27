@@ -16,7 +16,7 @@ MemBlockDevice::~MemBlockDevice() {
 MemBlockDevice& MemBlockDevice::operator=(const MemBlockDevice &other) {
     delete [] this->memBlocks;
     this->nrOfBlocks = other.nrOfBlocks;
-    this->freePointer = other.freePointer;
+    this->freeBlocks = other.freeBlocks;
     this->memBlocks = new Block[this->nrOfBlocks];
 
     for (int i = 0; i < this->nrOfBlocks; ++i)
@@ -36,7 +36,17 @@ Block& MemBlockDevice::operator[](int index) const {
 
 int MemBlockDevice::spaceLeft() const {
     /* Not yet implemented */
-    return 0;
+    return this->freeBlocks.size();
+}
+
+size_t MemBlockDevice::getFreeBlock() {
+	size_t blockNr = this->freeBlocks.front();
+	this->freeBlocks.pop();
+	return blockNr;
+}
+
+void MemBlockDevice::releaseBlock(int blockNr) {
+	this->freeBlocks.push(blockNr);
 }
 
 int MemBlockDevice::writeBlock(int blockNr, const std::vector<char> &vec) {
